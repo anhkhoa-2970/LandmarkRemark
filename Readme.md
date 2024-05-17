@@ -9,7 +9,8 @@ Before you begin, make sure you have the following installed:
 
 
 ## Overview
-This Android application, Landmark Remark, allows users to save notes associated with specific locations on a map and see note in map by click to marker. Users can view existing notes, add new notes, and search for notes by username or content. The app aims to provide a simple and intuitive way for users to mark and share interesting locations with others.
+This Android application, Landmark Remark, allows users to save notes associated with specific locations on a map and see note in map by click to marker. 
+Users can view existing notes, add new notes, edit their notes by long clicking on their note, and search for notes by username or content.
 
 
 ## Technology Stack
@@ -40,7 +41,7 @@ The entire source code of the application can be found in the app directory.
 ### Time Allocation
 - Approximately 2 hours were spent on initial project setup, including setting up the development environment and integrating necessary libraries.
 - 3 hours dedicated to designing and implementing the user interface using Jetpack Compose, ensuring style and fit for the app.
-- 5 hours were allocated to backend logic, including integration with Firebase Authentication and Firebase Firestore, user authentication, data management and in app logic.
+- 7 hours were allocated to backend logic, including integration with Firebase Authentication and Firebase Firestore, user authentication, data management and in app logic.
 - 3 hours was spent on testing, bug fixing, and code optimization to ensure a stable and efficient application.
 
 

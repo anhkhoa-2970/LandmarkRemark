@@ -6,6 +6,9 @@ import com.test.landmarkremark.domain.models.NoteModel
 import com.test.landmarkremark.domain.models.UserInfoModel
 
 interface NoteRepository {
-	suspend fun saveNoteForUser(userId: String, note: NoteModel): Flow<NetworkResult<NoteModel>>
-	suspend fun getAllUsersWithNotes(): Flow<NetworkResult<List<UserInfoModel>>>
+	fun saveNoteForUser(userId: String, note: NoteModel): Flow<NetworkResult<NoteModel>>
+	fun getAllUsersWithNotes(): Flow<NetworkResult<List<UserInfoModel>>>
+	fun editMyNote(userId: String, noteId: String, updatedNote: NoteModel): Flow<NetworkResult<Any>>
+
+	fun deleteMyNote(userId: String, noteId: String): Flow<NetworkResult<String>>
 }

@@ -8,15 +8,17 @@ import com.test.landmarkremark.domain.repositories.NoteRepository
 import javax.inject.Inject
 
 class NoteUseCase @Inject constructor(private val courseRepository: NoteRepository) {
-    suspend fun getNotes(): Flow<NetworkResult<List<UserInfoModel>>> {
-        return courseRepository.getAllUsersWithNotes()
-    }
+    fun getNotes(): Flow<NetworkResult<List<UserInfoModel>>> =
+        courseRepository.getAllUsersWithNotes()
 
-    suspend fun saveNote(
+    fun saveNote(
         userId: String,
         note: NoteModel
-    ): Flow<NetworkResult<NoteModel>>
-    {
-        return courseRepository.saveNoteForUser(userId, note)
-    }
+    ): Flow<NetworkResult<NoteModel>> =
+        courseRepository.saveNoteForUser(userId, note)
+    fun editMyNote(userId: String, noteId: String, updatedNote: NoteModel): Flow<NetworkResult<Any>> =
+        courseRepository.editMyNote(userId, noteId, updatedNote)
+
+    fun deleteNote(userId: String, noteId: String): Flow<NetworkResult<String>> =
+        courseRepository.deleteMyNote(userId, noteId)
 }

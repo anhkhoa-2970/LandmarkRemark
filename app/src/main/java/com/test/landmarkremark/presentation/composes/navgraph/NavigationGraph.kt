@@ -6,7 +6,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.google.android.gms.maps.MapView
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.test.landmarkremark.domain.models.UserInfoModel
@@ -17,7 +16,7 @@ import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
 @Composable
-fun NavigationGraph(navController: NavHostController, mapView: MapView) {
+fun NavigationGraph(navController: NavHostController) {
 
 	NavHost(
 		navController,
@@ -45,7 +44,7 @@ fun NavigationGraph(navController: NavHostController, mapView: MapView) {
 			val listUserInfo: List<UserInfoModel> = Gson().fromJson(decodedStringList, listType)
 
 			val keyAction = backStackEntry.arguments?.getString("keyActions")
-			MapScreen(listUserInfo = listUserInfo,keyAction = keyAction)
+			MapScreen(navController= navController,listUserInfo = listUserInfo,keyAction = keyAction)
 		}
 	}
 }

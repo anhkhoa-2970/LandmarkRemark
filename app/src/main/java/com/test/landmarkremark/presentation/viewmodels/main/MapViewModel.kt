@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import org.joda.time.DateTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -60,7 +61,7 @@ class MapViewModel @Inject constructor(
 		val currentUser = auth.currentUser
 		if (currentUser != null) {
 			val userId = currentUser.uid
-			val note = NoteModel(text = text, latitude = latLng.latitude, longitude = latLng.longitude)
+			val note = NoteModel(id= DateTime.now().toString(),text = text, latitude = latLng.latitude, longitude = latLng.longitude)
 			viewModelScope.launch {
 				noteUseCase.saveNote(userId, note).collectLatest { networkResult ->
 					networkResult.handleNetworkResult(

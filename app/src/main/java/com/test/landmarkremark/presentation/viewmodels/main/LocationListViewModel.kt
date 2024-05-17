@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.test.landmarkremark.data.base.handleNetworkResult
+import com.test.landmarkremark.domain.models.NoteModel
 import com.test.landmarkremark.domain.models.UserInfoModel
 import com.test.landmarkremark.domain.usecases.AuthUseCase
 import com.test.landmarkremark.domain.usecases.NoteUseCase
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import org.joda.time.DateTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -42,7 +44,7 @@ class LocationListViewModel @Inject constructor(
 	// Function to load user notes
 	fun loadUserNotes(onError: (String) -> Unit) {
 		if (_currentUser.value != null) { // Fetches user notes only if there's a current user authenticated
-			updateProgressState(ProgressState.Loading) // Updates progress state to indicate loading
+			updateProgressState(ProgressState.Loading)
 			viewModelScope.launch {
 				// Asynchronously fetches user notes and collects the latest result
 				noteUseCase.getNotes().collectLatest { networkResult ->
@@ -52,6 +54,59 @@ class LocationListViewModel @Inject constructor(
 						},
 						fail = {
 							onError(it.message ?: "Unknown error!")
+						},
+						loading = {
+							if (it) {
+								updateProgressState(ProgressState.Loading)
+							} else {
+								updateProgressState(ProgressState.NoLoading)
+							}
+						}
+					)
+				}
+			}
+		}
+	}
+
+	fun editMyNote(userId: String, note: NoteModel, newNote: String,onEditSuccess:()->Unit, onEditError: (String) -> Unit){
+		if (_currentUser.value != null) { // Fetches user notes only if there's a current user authenticated
+			updateProgressState(ProgressState.Loading)
+			viewModelScope.launch {
+				// Asynchronously edit note of current user and collects the latest list notes
+				noteUseCase.editMyNote(userId,note.id, NoteModel(id = DateTime.now().toString(), text =  newNote, latitude = note.latitude, longitude = note.longitude)).collectLatest { networkResult ->
+					networkResult.handleNetworkResult(
+						success = {
+							onEditSuccess()
+							loadUserNotes{errorMsg -> onEditError(errorMsg) }
+						},
+						fail = {
+							onEditError(it.message ?: "Unknown error!")
+						},
+						loading = {
+							if (it) {
+								updateProgressState(ProgressState.Loading)
+							} else {
+								updateProgressState(ProgressState.NoLoading)
+							}
+						}
+					)
+				}
+			}
+		}
+	}
+
+	fun deleteMyNote(userId: String, noteId: String,onDeleteError: (String) -> Unit){
+		if (_currentUser.value != null) { // Fetches user notes only if there's a current user authenticated
+			updateProgressState(ProgressState.Loading)
+			viewModelScope.launch {
+				// Asynchronously delete note of current user and collects the latest list notes
+				noteUseCase.deleteNote(userId,noteId).collectLatest { networkResult ->
+					networkResult.handleNetworkResult(
+						success = {
+							loadUserNotes{errorMsg -> onDeleteError(errorMsg) }
+						},
+						fail = {
+							onDeleteError(it.message ?: "Unknown error!")
 						},
 						loading = {
 							if (it) {

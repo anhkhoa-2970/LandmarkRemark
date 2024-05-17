@@ -1,8 +1,9 @@
 package com.test.landmarkremark.presentation.composes.main
 
 import android.content.Intent
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,6 +21,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.outlined.ExitToApp
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
@@ -59,11 +62,13 @@ import com.test.landmarkremark.domain.models.NoteModel
 import com.test.landmarkremark.domain.models.UserInfoModel
 import com.test.landmarkremark.presentation.activities.LoginActivity
 import com.test.landmarkremark.presentation.activities.base.baseActivity
+import com.test.landmarkremark.presentation.composes.common.ChooseOptionsBottomSheet
 import com.test.landmarkremark.presentation.composes.common.CommonButton
-import com.test.landmarkremark.presentation.composes.common.ShowNoteDialog
 import com.test.landmarkremark.presentation.composes.common.CustomToast
+import com.test.landmarkremark.presentation.composes.common.EnterNoteBottomSheet
 import com.test.landmarkremark.presentation.composes.common.FABAddNote
 import com.test.landmarkremark.presentation.composes.common.SearchView
+import com.test.landmarkremark.presentation.composes.common.ShowNoteDialog
 import com.test.landmarkremark.presentation.composes.common.ShowProgressDialog
 import com.test.landmarkremark.presentation.ui.states.ProgressState
 import com.test.landmarkremark.presentation.viewmodels.main.LocationListViewModel
@@ -89,8 +94,19 @@ fun LocationListScreen(
     // hold state of search value
     val inputSearch = remember { mutableStateOf(TextFieldValue("")) }
     var onError by remember { mutableStateOf("") }
+
     // holding state if user click to note will show dialog
-    var isShowFullNote: Pair<String?,NoteModel?> by remember { mutableStateOf(Pair(null,null)) }
+    var isShowFullNote: Pair<String?, NoteModel?> by remember { mutableStateOf(Pair(null, null)) }
+
+    // holding state if user long click to current user note will show bottom sheet dialog to choose delete or edit
+    var isLongClick: NoteModel? by remember { mutableStateOf(null) }
+
+    // holding state show edit note bottom sheet dialog
+    var isShowEditBottomSheet: NoteModel? by remember { mutableStateOf(null) }
+
+    // holding state show edit note bottom sheet dialog
+    var isLogout by remember { mutableStateOf(false) }
+
     // state pull to refresh
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val pullRefreshState = rememberPullRefreshState(isRefreshing, {
@@ -114,12 +130,7 @@ fun LocationListScreen(
         modifier = Modifier.background(colorResource(id = R.color.background_color)),
         topBar = {
             LandmarkAppBar(onLogoutClick = {
-                viewModel.logout(onSuccess = {
-                    // set flags PREFS_LOGIN to false and go to login screen
-                    SavedStore.saveBoolean(Constants.PREFS_LOGIN, false)
-                    baseActivity?.startActivity(Intent(baseActivity, LoginActivity::class.java))
-                    baseActivity?.finish()
-                }, onError = { onError = it })
+                isLogout = true
             })
         },
         floatingActionButton = {
@@ -170,8 +181,10 @@ fun LocationListScreen(
                             currentUser?.uid,
                             inputSearch.value.text,
                             onItemNoteClicked = { note ->
-                                isShowFullNote = Pair(user.username,note)
+                                isShowFullNote = Pair(user.username, note)
                                 focusManager.clearFocus()
+                            }, onLongClickMyNote = { note ->
+                                isLongClick = note
                             })
                     }
                 }
@@ -182,6 +195,7 @@ fun LocationListScreen(
                     text = stringResource(id = R.string.view_map),
                     paddingHorizontal = 16.dp,
                     onClick = { actionNavigate(Constants.ActionToMap.SeeMap.action) })
+                Spacer(modifier = Modifier.height(8.dp))
             }
         }
     )
@@ -205,10 +219,94 @@ fun LocationListScreen(
             userName = isShowFullNote.first,
             note = isShowFullNote.second!!,
             onClose = {
-                isShowFullNote = Pair(null,null)
+                isShowFullNote = Pair(null, null)
             }
         )
     }
+
+    if (isLongClick != null) {
+        currentUser?.uid?.let {
+            ChooseOptionsBottomSheet(
+                textPositive = "Edit",
+                onPositive = {
+//                    viewModel.editMyNote(
+//                        it,
+//                        isLongClick!!,
+//                        onEditError = { msg -> onError = msg })
+                    isShowEditBottomSheet = isLongClick
+                    isLongClick = null
+                },
+                textNegative = "Delete",
+                onNegative = {
+                    viewModel.deleteMyNote(
+                        it,
+                        isLongClick!!.id,
+                        onDeleteError = { msg -> onError = msg })
+                    isLongClick = null
+                },
+                onDismiss = {
+                    isLongClick = null
+                }
+            )
+        } ?: run {
+            onError = "Not found user!!!"
+        }
+    }
+
+    if (isShowEditBottomSheet != null) {
+        currentUser?.uid?.let {
+            EnterNoteBottomSheet(
+                textNegative = stringResource(id = R.string.cancel),
+                initValue = isShowEditBottomSheet!!.text,
+                onNegative = {
+                    isShowEditBottomSheet = null
+                },
+                textPositive = stringResource(id = R.string.save),
+                onPositive = { newNote ->
+                    viewModel.editMyNote(
+                        userId = it,
+                        note = isShowEditBottomSheet!!,
+                        newNote = newNote,
+                        onEditSuccess = {
+                            isShowEditBottomSheet = null
+                        },
+                        onEditError = { msg -> onError = msg })
+
+                },
+                onDismiss = {
+                    isShowEditBottomSheet = null
+                },
+                onEnterNoteError = {
+                    isShowEditBottomSheet = null
+                    onError = it
+                }
+            )
+        } ?: run {
+            onError = "Not found user!!!"
+        }
+    }
+
+    if (isLogout) {
+        ChooseOptionsBottomSheet(
+            textNegative = stringResource(id = R.string.cancel),
+            onNegative = { isLogout = false },
+            iconNegative = Icons.Filled.Close,
+            onPositive = {
+                isLogout = false
+                viewModel.logout(onSuccess = {
+                    // set flags PREFS_LOGIN to false and go to login screen
+                    SavedStore.saveBoolean(Constants.PREFS_LOGIN, false)
+                    baseActivity?.startActivity(Intent(baseActivity, LoginActivity::class.java))
+                    baseActivity?.finish()
+                }, onError = { onError = it })
+            },
+            textPositive = stringResource(id = R.string.logout),
+            iconPositive = Icons.AutoMirrored.Outlined.ExitToApp,
+
+            onDismiss = { isLogout = false }
+        )
+    }
+
     viewModel.let {
         val uiState by it.uiState.collectAsState()
         when (uiState.progressState) {
@@ -224,7 +322,8 @@ fun UserItem(
     userInfoModel: UserInfoModel,
     userId: String?,
     inputSearch: String?,
-    onItemNoteClicked: (NoteModel) -> Unit
+    onItemNoteClicked: (NoteModel) -> Unit,
+    onLongClickMyNote: (NoteModel) -> Unit
 ) {
     var visibleListNotes = emptyList<NoteModel>()
     // logic to show list Note by keyword
@@ -242,11 +341,12 @@ fun UserItem(
     }
     Column(Modifier.padding(horizontal = 16.dp)) {
         Text(
-            text = userInfoModel.username ?: "", Modifier
+            text = userInfoModel.username ?: "",
+            Modifier
                 .fillMaxWidth()
                 .padding(start = 12.dp, top = 12.dp)
                 .wrapContentHeight(), fontWeight = FontWeight.Bold,
-            color = if (userInfoModel.uid == userId) Color(0xFF5B3761) else Color.Black
+            color = if (userInfoModel.uid == userId) colorResource(id = R.color.color_main) else Color.Black
         )
         LazyColumn(
             modifier = Modifier
@@ -262,7 +362,12 @@ fun UserItem(
             userInfoModel.notes?.let {
                 items(visibleListNotes) { user ->
                     Column(Modifier.background(Color.White)) {
-                        NoteItem(note = user, onClick = { onItemNoteClicked(user) })
+                        NoteItem(
+                            isMyNote = userInfoModel.uid == userId,
+                            note = user,
+                            onClick = { onItemNoteClicked(user) },
+                            onLongClick = { onLongClickMyNote(user) }
+                        )
 
                         if (visibleListNotes.last() != user) {
                             Spacer(
@@ -283,14 +388,23 @@ fun UserItem(
 }
 
 //Note content item
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun NoteItem(note: NoteModel, onClick: () -> Unit) {
+fun NoteItem(
+    isMyNote: Boolean = false,
+    note: NoteModel,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+) {
     Column(
         modifier = Modifier
             .height(106.dp)
             .fillMaxWidth()
-            .padding(horizontal = 12.dp)
-            .clickable { onClick() },
+            .combinedClickable(
+                onClick = { onClick() },
+                onLongClick = { if (isMyNote) onLongClick() }
+            )
+            .padding(horizontal = 12.dp),
         verticalArrangement = Arrangement.Center
     ) {
         Text(
@@ -325,7 +439,12 @@ fun LandmarkAppBar(onLogoutClick: () -> Unit) {
             titleContentColor = colorResource(id = R.color.black),
             actionIconContentColor = colorResource(id = R.color.black)
         ),
-        title = { Text(text = stringResource(id = R.string.landmark_notes), fontWeight = FontWeight.Bold) },
+        title = {
+            Text(
+                text = stringResource(id = R.string.landmark_notes),
+                fontWeight = FontWeight.Bold
+            )
+        },
         actions = {
             IconButton(onClick = { onLogoutClick() }) {
                 Icon(

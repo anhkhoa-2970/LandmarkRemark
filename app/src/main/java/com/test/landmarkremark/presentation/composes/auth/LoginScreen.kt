@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -68,6 +67,7 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
 		Text(text = if (isHaveAccount) stringResource(id = R.string.login) else stringResource(id = R.string.register), style = TextStyle(color = Color(0xFF181725), fontSize = 24.sp, fontWeight = FontWeight.Bold))
 
 		CustomInputView(title = stringResource(id = R.string.email),
+			isRequiredLabel = !isHaveAccount,
 			textValue = email,
 			onTextValueChanged = { email = it })
 
@@ -75,6 +75,7 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
 
 		CustomInputView(
 			title = stringResource(id = R.string.password),
+			isRequiredLabel = !isHaveAccount,
 			textValue = password,
 			onTextValueChanged = { password = it },
 //			visualTransformation = PasswordVisualTransformation()
@@ -82,12 +83,15 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
 
 		if (!isHaveAccount) {
 			CustomInputView(title = stringResource(id = R.string.user_name),
+				isRequiredLabel = true,
 				textValue = userName,
 				onTextValueChanged = { userName = it })
 		}
 		Box(modifier = Modifier.height(12.dp))
 
 		CommonButton(text = if (isHaveAccount) stringResource(id = R.string.login) else stringResource(id = R.string.register), onClick = {
+			keyboardController?.hide()
+			focusManager.clearFocus()
 			if (isHaveAccount) {
 				viewModel.login(email = email.trim(), password = password, onSuccess = { navigateToActivity(true, MainActivity::class.java) }) {
 					onError = it
@@ -100,6 +104,8 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
 		})
 
 		TextButton(onClick = { isHaveAccount = !isHaveAccount }) {
+			keyboardController?.hide()
+			focusManager.clearFocus()
 			Text(if (isHaveAccount) stringResource(id = R.string.not_have_account) else stringResource(id = R.string.have_account))
 		}
 	}

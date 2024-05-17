@@ -9,6 +9,7 @@ data class UserInfoModel(
 )
 
 data class NoteModel(
+	val id : String= "",
 	val text: String = "",
 	val latitude: Double = 0.0,
 	val longitude: Double = 0.0

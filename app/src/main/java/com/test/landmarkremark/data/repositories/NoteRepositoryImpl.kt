@@ -13,9 +13,7 @@ import javax.inject.Inject
 class NoteRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore
 ) : NoteRepository {
-
-
-    override suspend fun saveNoteForUser(userId: String, note: NoteModel): Flow<NetworkResult<NoteModel>> = flow {
+    override fun saveNoteForUser(userId: String, note: NoteModel): Flow<NetworkResult<NoteModel>> = flow {
         try {
             // get info of user by userId and update new note for it
             val userRef = firestore.collection("users").document(userId)
@@ -35,8 +33,80 @@ class NoteRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun editMyNote(userId: String, noteId: String, updatedNote: NoteModel): Flow<NetworkResult<Any>> = flow {
+        try {
+            // Get the user document reference
+            val userRef = firestore.collection("users").document(userId)
+
+            // Fetch the user snapshot
+            val userSnapshot = userRef.get().await()
+
+            if (userSnapshot.exists()) {
+                // Get the user's notes
+                val userInfo = userSnapshot.toObject(UserInfoModel::class.java)
+                val userNotes = userInfo?.notes?.toMutableList() ?: mutableListOf()
+
+                // Find the index of the note to be updated
+                val noteIndex = userNotes.indexOfFirst { it.id == noteId }
+
+                if (noteIndex != -1) {
+                    // Update the note
+                    userNotes[noteIndex] = updatedNote
+
+                    // Update the notes field in Firestore
+                    userRef.update("notes", userNotes).await()
+
+                    emit(NetworkResult.Success("Note updated successfully", updatedNote))
+                } else {
+                    emit(NetworkResult.Failure("Note not found", 404))
+                }
+            } else {
+                emit(NetworkResult.Failure("User not found", 404))
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emit(NetworkResult.Failure(e.toString(), 1000))
+        }
+    }
+
+    override fun deleteMyNote(userId: String, noteId: String): Flow<NetworkResult<String>> = flow {
+        try {
+            // Get the user document reference
+            val userRef = firestore.collection("users").document(userId)
+
+            // Fetch the user snapshot
+            val userSnapshot = userRef.get().await()
+
+            if (userSnapshot.exists()) {
+                // Get the user's notes
+                val userInfo = userSnapshot.toObject(UserInfoModel::class.java)
+                val userNotes = userInfo?.notes?.toMutableList() ?: mutableListOf()
+
+                // Find the index of the note to be deleted
+                val noteIndex = userNotes.indexOfFirst { it.id == noteId }
+
+                if (noteIndex != -1) {
+                    // Remove the note
+                    userNotes.removeAt(noteIndex)
+
+                    // Update the notes field in Firestore
+                    userRef.update("notes", userNotes).await()
+
+                    emit(NetworkResult.Success("Note deleted successfully", noteId))
+                } else {
+                    emit(NetworkResult.Failure("Note not found", 404))
+                }
+            } else {
+                emit(NetworkResult.Failure("User not found", 404))
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emit(NetworkResult.Failure(e.toString(), 1000))
+        }
+    }
+
     //get all user from firestore
-    override suspend fun getAllUsersWithNotes(): Flow<NetworkResult<List<UserInfoModel>>> = flow {
+    override fun getAllUsersWithNotes(): Flow<NetworkResult<List<UserInfoModel>>> = flow {
         try {
             val usersSnapshot = firestore.collection("users").get().await()
             val usersWithNotes = mutableListOf<UserInfoModel>()
