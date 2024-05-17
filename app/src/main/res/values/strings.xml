@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">Landmark Remark</string>
+    <string name="landmark_notes">Landmark Notes</string>
+    <string name="enter_name_screen">Enter Name Screen</string>
+    <string name="location_list_screen">Location List Screen</string>
+    <string name="map_screen">Map Screen</string>
+    <string name="please_check_your_network">Please check your network!</string>
+    <string name="vietnamese">Vietnamese</string>
+    <string name="time_out">Processing failed, please try again!</string>
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="user_name">User name</string>
+    <string name="not_have_account">Don\'t have an account? Register</string>
+    <string name="have_account">Already have an account? Login</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="view_map">View Map</string>
+    <string name="latitude">Latitude:</string>
+    <string name="longitude">Longitude:</string>
+    <string name="logout">Logout</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="please_enter_note">Please enter note!</string>
+    <string name="enter_note">Enter note</string>
+    <string name="add_note">Add note</string>
+</resources>
