@@ -98,7 +98,6 @@ class AuthViewModel @Inject constructor(
 			!validateEmail(email) -> "Email is invalid"
 			password.isNullOrBlank() -> "Password is empty"
 			!Utils.isPasswordFieldValid(password) -> "Invalid password"
-
 			else -> null
 		}
 	}

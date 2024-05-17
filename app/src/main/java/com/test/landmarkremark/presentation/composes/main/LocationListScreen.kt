@@ -90,7 +90,7 @@ fun LocationListScreen(
     val inputSearch = remember { mutableStateOf(TextFieldValue("")) }
     var onError by remember { mutableStateOf("") }
     // holding state if user click to note will show dialog
-    var isShowFullNote: NoteModel? by remember { mutableStateOf(null) }
+    var isShowFullNote: Pair<String?,NoteModel?> by remember { mutableStateOf(Pair(null,null)) }
     // state pull to refresh
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val pullRefreshState = rememberPullRefreshState(isRefreshing, {
@@ -170,7 +170,7 @@ fun LocationListScreen(
                             currentUser?.uid,
                             inputSearch.value.text,
                             onItemNoteClicked = { note ->
-                                isShowFullNote = note
+                                isShowFullNote = Pair(user.username,note)
                                 focusManager.clearFocus()
                             })
                     }
@@ -200,12 +200,12 @@ fun LocationListScreen(
         }
     }
 
-    if (isShowFullNote != null) {
+    if (isShowFullNote.first != null && isShowFullNote.second != null) {
         ShowNoteDialog(
-            userName = "",
-            note = isShowFullNote!!,
+            userName = isShowFullNote.first,
+            note = isShowFullNote.second!!,
             onClose = {
-                isShowFullNote = null
+                isShowFullNote = Pair(null,null)
             }
         )
     }

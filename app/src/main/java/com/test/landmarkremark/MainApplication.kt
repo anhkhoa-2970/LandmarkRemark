@@ -13,7 +13,6 @@ var application: MainApplication? = null
 
 @HiltAndroidApp
 class MainApplication : Application() {
-	private val TAG = "MainApplication"
 
 	override fun onCreate() {
 		super.onCreate()

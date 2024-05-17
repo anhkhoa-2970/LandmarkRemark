@@ -350,11 +350,19 @@ fun ShowNoteDialog(
 					.background(Color.White, shape = RoundedCornerShape(16.dp))
 					.padding(18.dp)
 			) {
+				Text(
+					text = "$userName",
+					style = MaterialTheme.typography.bodyMedium,
+					color = Color.Black,
+					fontWeight = FontWeight.Bold
+				)
+				Spacer(modifier = Modifier.height(10.dp))
 				Column(
 					modifier
 						.weight(1f)
 						.verticalScroll(rememberScrollState(), true)
 				) {
+
 					Text(
 						text = note.text,
 						style = MaterialTheme.typography.bodyMedium,

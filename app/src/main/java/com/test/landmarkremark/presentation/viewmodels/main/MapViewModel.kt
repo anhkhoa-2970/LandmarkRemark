@@ -7,6 +7,7 @@ import com.test.landmarkremark.data.base.handleNetworkResult
 import com.test.landmarkremark.domain.models.NoteModel
 import com.test.landmarkremark.domain.models.UserInfoModel
 import com.test.landmarkremark.domain.usecases.NoteUseCase
+import com.test.landmarkremark.presentation.composes.common.ToastMode
 import com.test.landmarkremark.presentation.ui.states.ProgressState
 import com.test.landmarkremark.presentation.viewmodels.base.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -54,7 +55,7 @@ class MapViewModel @Inject constructor(
 	fun saveNote(
 		text: String,
 		latLng: LatLng,
-		onError: (String) -> Unit
+		onFinished: (ToastMode, String) -> Unit
 	) {
 		val currentUser = auth.currentUser
 		if (currentUser != null) {
@@ -65,9 +66,10 @@ class MapViewModel @Inject constructor(
 					networkResult.handleNetworkResult(
 						success = {
 							addNoteToUser(currentUser.uid, it.data) // Adds note to user on success
+							onFinished(ToastMode.SUCCESS,"Add note successfully!")
 						},
 						fail = {
-							onError(it.message ?: "Unknown error!")
+							onFinished(ToastMode.ERROR,it.message ?: "Unknown error!")
 						},
 						loading = {
 							if (it) {
