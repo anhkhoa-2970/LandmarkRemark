@@ -5,18 +5,15 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.maps.MapView
 import com.test.landmarkremark.R
 import com.test.landmarkremark.presentation.activities.base.BaseActivity
-import com.test.landmarkremark.presentation.activities.base.localContext
 import com.test.landmarkremark.presentation.composes.navgraph.NavigationGraph
 import com.test.landmarkremark.presentation.ui.theme.BaseAppComposeTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -41,7 +38,7 @@ class MainActivity : BaseActivity() {
                         Box(
                             modifier = Modifier.padding(paddingValues)
                         ) {
-                            NavigationGraph( navController = navController, mapView)
+                            NavigationGraph(navController = navController)
                         }
                     }
                 }

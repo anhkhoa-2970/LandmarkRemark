@@ -42,93 +42,116 @@ import com.test.landmarkremark.utils.Utils.navigateToActivity
 
 @Composable
 fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
-	// holding state register or login: true - login || false - register
-	var isHaveAccount by remember { mutableStateOf(true) }
-	var email by remember { mutableStateOf("") }
-	var password by remember { mutableStateOf("") }
-	var userName by remember { mutableStateOf("") }
-	var onError by remember { mutableStateOf("") }
-	val keyboardController = LocalSoftwareKeyboardController.current
-	val focusManager = LocalFocusManager.current
-	Column(
-		modifier = Modifier
-			.fillMaxSize()
-			.padding(16.dp)
-			.background(Color.White)
-			.pointerInput(Unit) {
-				detectTapGestures(onTap = {
+    // holding state register or login: true - login || false - register
+    var isHaveAccount by remember { mutableStateOf(true) }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var userName by remember { mutableStateOf("") }
+    var onError by remember { mutableStateOf("") }
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .background(Color.White)
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = {
 					keyboardController?.hide()
 					focusManager.clearFocus()
-				})
-			},
-		horizontalAlignment = Alignment.CenterHorizontally,
-		verticalArrangement = Arrangement.Center
-	) {
-		Text(text = if (isHaveAccount) stringResource(id = R.string.login) else stringResource(id = R.string.register), style = TextStyle(color = Color(0xFF181725), fontSize = 24.sp, fontWeight = FontWeight.Bold))
+                })
+            },
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = if (isHaveAccount) stringResource(id = R.string.login) else stringResource(id = R.string.register),
+            style = TextStyle(
+                color = Color(0xFF181725),
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold
+            )
+        )
 
-		CustomInputView(title = stringResource(id = R.string.email),
-			isRequiredLabel = !isHaveAccount,
-			textValue = email,
-			onTextValueChanged = { email = it })
+        CustomInputView(title = stringResource(id = R.string.email),
+            isRequiredLabel = !isHaveAccount,
+            textValue = email,
+            onTextValueChanged = { email = it })
 
-		Box(modifier = Modifier.height(6.dp))
+        Box(modifier = Modifier.height(6.dp))
 
-		CustomInputView(
-			title = stringResource(id = R.string.password),
-			isRequiredLabel = !isHaveAccount,
-			textValue = password,
-			onTextValueChanged = { password = it },
+        CustomInputView(
+            title = stringResource(id = R.string.password),
+            isRequiredLabel = !isHaveAccount,
+            textValue = password,
+            onTextValueChanged = { password = it },
 //			visualTransformation = PasswordVisualTransformation()
-		)
+        )
 
-		if (!isHaveAccount) {
-			CustomInputView(title = stringResource(id = R.string.user_name),
-				isRequiredLabel = true,
-				textValue = userName,
-				onTextValueChanged = { userName = it })
-		}
-		Box(modifier = Modifier.height(12.dp))
+        if (!isHaveAccount) {
+            CustomInputView(title = stringResource(id = R.string.user_name),
+                isRequiredLabel = true,
+                textValue = userName,
+                onTextValueChanged = { userName = it })
+        }
+        Box(modifier = Modifier.height(12.dp))
 
-		CommonButton(text = if (isHaveAccount) stringResource(id = R.string.login) else stringResource(id = R.string.register), onClick = {
-			keyboardController?.hide()
-			focusManager.clearFocus()
-			if (isHaveAccount) {
-				viewModel.login(email = email.trim(), password = password, onSuccess = { navigateToActivity(true, MainActivity::class.java) }) {
-					onError = it
-				}
-			} else {
-				viewModel.register(email = email.trim(), password = password, userName = userName.trim(), onSuccess = { navigateToActivity(true, MainActivity::class.java) }) {
-					onError = it
-				}
-			}
-		})
+        CommonButton(
+            text = if (isHaveAccount) stringResource(id = R.string.login) else stringResource(
+                id = R.string.register
+            ), onClick = {
+                keyboardController?.hide()
+                focusManager.clearFocus()
+                if (isHaveAccount) {
+                    viewModel.login(
+                        email = email.trim(),
+                        password = password,
+                        onSuccess = { navigateToActivity(true, MainActivity::class.java) }) {
+                        onError = it
+                    }
+                } else {
+                    viewModel.register(
+                        email = email.trim(),
+                        password = password,
+                        userName = userName.trim(),
+                        onSuccess = { navigateToActivity(true, MainActivity::class.java) }) {
+                        onError = it
+                    }
+                }
+            })
 
-		TextButton(onClick = { isHaveAccount = !isHaveAccount }) {
-			keyboardController?.hide()
-			focusManager.clearFocus()
-			Text(if (isHaveAccount) stringResource(id = R.string.not_have_account) else stringResource(id = R.string.have_account))
-		}
-	}
+        TextButton(onClick = {
+            keyboardController?.hide()
+            focusManager.clearFocus()
+            isHaveAccount = !isHaveAccount
+        }) {
+            Text(
+                if (isHaveAccount) stringResource(id = R.string.not_have_account) else stringResource(
+                    id = R.string.have_account
+                )
+            )
+        }
+    }
 
-	if (onError.isNotBlank()) {
-		Box(
-			Modifier
-				.fillMaxWidth()
-				.fillMaxHeight()
-				.background(Color.Transparent)
-				.padding(horizontal = 16.dp)
-		) {
-			CustomToast(onError) {
-				onError = ""
-			}
-		}
-	}
-	viewModel.let {
-		val uiState by it.uiState.collectAsState()
-		when (uiState.progressState) {
-			ProgressState.Loading -> ShowProgressDialog()
-			else -> {}
-		}
-	}
+    if (onError.isNotBlank()) {
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .background(Color.Transparent)
+                .padding(horizontal = 16.dp)
+        ) {
+            CustomToast(onError) {
+                onError = ""
+            }
+        }
+    }
+    viewModel.let {
+        val uiState by it.uiState.collectAsState()
+        when (uiState.progressState) {
+            ProgressState.Loading -> ShowProgressDialog()
+            else -> {}
+        }
+    }
 
 }
