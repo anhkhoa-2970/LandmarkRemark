@@ -108,7 +108,7 @@ class AuthViewModel @Inject constructor(
             email.isNullOrBlank() -> "Email is empty!"
             !validateEmail(email) -> "Email is invalid!"
             password.isNullOrBlank() -> "Password is empty!"
-            !Utils.isPasswordFieldValid(password) -> "Invalid password!"
+            !Utils.isPasswordFieldValid(password) -> "Password must be at least 8 characters including uppercase text, numbers, and special characters"
 
             isRegister == true && userName.isNullOrBlank() -> "User name is empty!"
             else -> null

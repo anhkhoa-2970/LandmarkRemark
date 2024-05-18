@@ -8,6 +8,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -65,7 +67,7 @@ import com.test.landmarkremark.presentation.activities.base.baseActivity
 import com.test.landmarkremark.presentation.composes.common.ChooseOptionsBottomSheet
 import com.test.landmarkremark.presentation.composes.common.CommonButton
 import com.test.landmarkremark.presentation.composes.common.CustomToast
-import com.test.landmarkremark.presentation.composes.common.EnterNoteBottomSheet
+import com.test.landmarkremark.presentation.composes.common.EnterTextBottomSheet
 import com.test.landmarkremark.presentation.composes.common.FABAddNote
 import com.test.landmarkremark.presentation.composes.common.SearchView
 import com.test.landmarkremark.presentation.composes.common.ShowNoteDialog
@@ -99,7 +101,10 @@ fun LocationListScreen(
     var isShowFullNote: Pair<String?, NoteModel?> by remember { mutableStateOf(Pair(null, null)) }
 
     // holding state if user long click to current user note will show bottom sheet dialog to choose delete or edit
-    var isLongClick: NoteModel? by remember { mutableStateOf(null) }
+    var isLongClickNote: NoteModel? by remember { mutableStateOf(null) }
+
+    // holding state if user long click to current user note will show bottom sheet dialog to edit name
+    var isLongClickName: UserInfoModel? by remember { mutableStateOf(null) }
 
     // holding state show edit note bottom sheet dialog
     var isShowEditBottomSheet: NoteModel? by remember { mutableStateOf(null) }
@@ -184,7 +189,9 @@ fun LocationListScreen(
                                 isShowFullNote = Pair(user.username, note)
                                 focusManager.clearFocus()
                             }, onLongClickMyNote = { note ->
-                                isLongClick = note
+                                isLongClickNote = note
+                            }, onLongClickMyName = { userInfoModel ->
+                                isLongClickName = userInfoModel
                             })
                     }
                 }
@@ -224,7 +231,7 @@ fun LocationListScreen(
         )
     }
 
-    if (isLongClick != null) {
+    if (isLongClickNote != null) {
         currentUser?.uid?.let {
             ChooseOptionsBottomSheet(
                 textPositive = "Edit",
@@ -233,20 +240,54 @@ fun LocationListScreen(
 //                        it,
 //                        isLongClick!!,
 //                        onEditError = { msg -> onError = msg })
-                    isShowEditBottomSheet = isLongClick
-                    isLongClick = null
+                    isShowEditBottomSheet = isLongClickNote
+                    isLongClickNote = null
                 },
                 textNegative = "Delete",
                 onNegative = {
                     viewModel.deleteMyNote(
                         it,
-                        isLongClick!!.id,
+                        isLongClickNote!!.id,
                         onDeleteError = { msg -> onError = msg })
-                    isLongClick = null
+                    isLongClickNote = null
                 },
                 onDismiss = {
-                    isLongClick = null
+                    isLongClickNote = null
                 }
+            )
+        } ?: run {
+            onError = "Not found user!!!"
+        }
+    }
+
+    if (isLongClickName != null) {
+        currentUser?.uid?.let {
+            EnterTextBottomSheet(
+                textNegative = stringResource(id = R.string.cancel),
+                initValue = isLongClickName!!.username,
+                title = stringResource(id = R.string.change_name),
+                label = stringResource(id = R.string.enter_name),
+                onNegative = {
+                    isLongClickName = null
+                },
+                textPositive = stringResource(id = R.string.save),
+                onPositive = { newUserName ->
+                    viewModel.updateUserName(
+                        userId = it,
+                        newUserName = newUserName,
+                        onEditSuccess = {
+                            isLongClickName = null
+                        },
+                        onEditError = { msg -> onError = msg })
+                },
+                onDismiss = {
+                    isLongClickName = null
+                },
+                onEnterNoteError = {
+                    isLongClickName = null
+                    onError = it
+                },
+                errorMsg = stringResource(id = R.string.please_enter_name)
             )
         } ?: run {
             onError = "Not found user!!!"
@@ -255,9 +296,11 @@ fun LocationListScreen(
 
     if (isShowEditBottomSheet != null) {
         currentUser?.uid?.let {
-            EnterNoteBottomSheet(
+            EnterTextBottomSheet(
                 textNegative = stringResource(id = R.string.cancel),
                 initValue = isShowEditBottomSheet!!.text,
+                title = stringResource(id = R.string.change_note),
+                label = stringResource(id = R.string.enter_note),
                 onNegative = {
                     isShowEditBottomSheet = null
                 },
@@ -279,7 +322,8 @@ fun LocationListScreen(
                 onEnterNoteError = {
                     isShowEditBottomSheet = null
                     onError = it
-                }
+                },
+                errorMsg = stringResource(id = R.string.please_enter_note)
             )
         } ?: run {
             onError = "Not found user!!!"
@@ -288,6 +332,7 @@ fun LocationListScreen(
 
     if (isLogout) {
         ChooseOptionsBottomSheet(
+            title = stringResource(id = R.string.logout_warning),
             textNegative = stringResource(id = R.string.cancel),
             onNegative = { isLogout = false },
             iconNegative = Icons.Filled.Close,
@@ -323,7 +368,8 @@ fun UserItem(
     userId: String?,
     inputSearch: String?,
     onItemNoteClicked: (NoteModel) -> Unit,
-    onLongClickMyNote: (NoteModel) -> Unit
+    onLongClickMyNote: (NoteModel) -> Unit,
+    onLongClickMyName: (UserInfoModel) -> Unit,
 ) {
     var visibleListNotes = emptyList<NoteModel>()
     // logic to show list Note by keyword
@@ -340,14 +386,29 @@ fun UserItem(
         }
     }
     Column(Modifier.padding(horizontal = 16.dp)) {
-        Text(
-            text = userInfoModel.username ?: "",
-            Modifier
-                .fillMaxWidth()
-                .padding(start = 12.dp, top = 12.dp)
-                .wrapContentHeight(), fontWeight = FontWeight.Bold,
-            color = if (userInfoModel.uid == userId) colorResource(id = R.color.color_main) else Color.Black
-        )
+        Row(Modifier.wrapContentWidth()) {
+            Text(
+                text = userInfoModel.username ?: "",
+                Modifier
+                    .weight(1f)
+                    .padding(start = 12.dp, top = 12.dp)
+                    .wrapContentHeight(),
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                color = if (userInfoModel.uid == userId) colorResource(id = R.color.color_main) else Color.Black
+            )
+            if (userId == userInfoModel.uid) {
+                IconButton(onClick = { onLongClickMyName(userInfoModel) }) {
+                    Icon(
+                        imageVector = Icons.Filled.Edit,
+                        contentDescription = stringResource(id = R.string.user_name)
+                    )
+                }
+            }
+
+        }
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()

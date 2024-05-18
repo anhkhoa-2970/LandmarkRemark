@@ -63,8 +63,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.test.landmarkremark.R
@@ -307,7 +309,12 @@ fun AddNoteDialog(
     AlertDialog(
         containerColor = Color.White,
         onDismissRequest = { onDismiss() },
-        title = { Text(text = stringResource(id = R.string.add_note)) },
+        title = {
+            Text(
+                text = stringResource(id = R.string.add_note),
+                fontWeight = FontWeight.Bold
+            )
+        },
         text = {
             Column {
                 OutlinedTextField(
@@ -343,9 +350,9 @@ fun AddNoteDialog(
         dismissButton = {
             Button(
                 onClick = { onDismiss() }, colors = ButtonColors(
-                    containerColor  = Color.Red,
+                    containerColor = Color.Gray,
                     contentColor = colorResource(id = R.color.white),
-                    disabledContainerColor = Color.Red,
+                    disabledContainerColor = Color.Gray,
                     disabledContentColor = colorResource(id = R.color.white)
                 )
             ) {
@@ -496,14 +503,17 @@ fun SearchView(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EnterNoteBottomSheet(
+fun EnterTextBottomSheet(
     modifier: Modifier = Modifier,
     initValue: String? = "",
+    title: String,
+    label: String,
     textPositive: String,
     onPositive: (String) -> Unit,
     textNegative: String,
     onNegative: () -> Unit,
     onEnterNoteError: (String) -> Unit,
+    errorMsg: String,
     onDismiss: () -> Unit
 ) {
     val modalBottomSheetState = rememberModalBottomSheetState()
@@ -514,11 +524,18 @@ fun EnterNoteBottomSheet(
         sheetState = modalBottomSheetState,
         dragHandle = { BottomSheetDefaults.DragHandle() },
     ) {
-
+        Text(
+            text = title,
+            modifier = modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = modifier.height(16.dp))
         OutlinedTextField(
             value = "$noteText",
             onValueChange = { noteText = it },
-            label = { Text(stringResource(id = R.string.enter_note)) },
+            label = { Text(label) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp)
@@ -534,7 +551,7 @@ fun EnterNoteBottomSheet(
                 CommonButton(
                     text = textNegative,
                     imageVector = Icons.Filled.Delete,
-                    color = Color.Red
+                    color = Color.Gray
                 ) {
                     onNegative()
                 }
@@ -548,7 +565,7 @@ fun EnterNoteBottomSheet(
                     if (!noteText.isNullOrBlank())
                         onPositive(noteText ?: "")
                     else
-                        onEnterNoteError("Please enter note!")
+                        onEnterNoteError(errorMsg)
                 }
             }
 
@@ -561,12 +578,13 @@ fun EnterNoteBottomSheet(
 @Composable
 fun ChooseOptionsBottomSheet(
     modifier: Modifier = Modifier,
+    title: String? = null,
     textPositive: String,
     onPositive: () -> Unit,
-    iconPositive: ImageVector?  = Icons.Filled.Edit,
+    iconPositive: ImageVector? = Icons.Filled.Edit,
     textNegative: String,
     onNegative: () -> Unit,
-    iconNegative: ImageVector?  = Icons.Filled.Delete,
+    iconNegative: ImageVector? = Icons.Filled.Delete,
     onDismiss: () -> Unit
 ) {
     val modalBottomSheetState = rememberModalBottomSheetState()
@@ -575,7 +593,17 @@ fun ChooseOptionsBottomSheet(
         onDismissRequest = { onDismiss() },
         sheetState = modalBottomSheetState,
         dragHandle = { BottomSheetDefaults.DragHandle() },
+        containerColor = Color.White
     ) {
+        title?.let {
+            Text(
+                modifier = modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center,
+                text = it,
+                style = Typography.bodyMedium.copy(color = Color.Black)
+            )
+            Spacer(modifier = modifier.height(16.dp))
+        }
         Row(
             modifier
                 .padding(horizontal = 16.dp)
@@ -585,7 +613,7 @@ fun ChooseOptionsBottomSheet(
                 CommonButton(
                     text = textNegative,
                     imageVector = iconNegative,
-                    color = Color.Red
+                    color = Color.Gray
                 ) {
                     onNegative()
                 }

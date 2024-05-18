@@ -20,8 +20,13 @@
     <string name="logout">Logout</string>
     <string name="cancel">Cancel</string>
     <string name="save">Save</string>
+    <string name="logout_warning">Are you sure you want to log out?</string>
     <string name="please_enter_note">Please enter note!</string>
+    <string name="change_note">Change note</string>
+    <string name="change_name">Change name</string>
     <string name="enter_note">Enter note</string>
+    <string name="enter_name">Enter name</string>
     <string name="add_note">Add note</string>
     <string name="unknown_error">Unknown error!</string>
+    <string name="please_enter_name">"Please enter name!"</string>
 </resources>

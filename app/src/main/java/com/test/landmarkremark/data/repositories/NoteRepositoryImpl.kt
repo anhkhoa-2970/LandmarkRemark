@@ -5,6 +5,7 @@ import com.test.landmarkremark.data.base.NetworkResult
 import com.test.landmarkremark.domain.models.NoteModel
 import com.test.landmarkremark.domain.models.UserInfoModel
 import com.test.landmarkremark.domain.repositories.NoteRepository
+import com.test.landmarkremark.utils.Constants
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
@@ -29,7 +30,7 @@ class NoteRepositoryImpl @Inject constructor(
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            emit(NetworkResult.Failure(e.toString(), 1000))
+            emit(NetworkResult.Failure(e.toString(), Constants.CODE_UNKNOWN))
         }
     }
 
@@ -65,7 +66,17 @@ class NoteRepositoryImpl @Inject constructor(
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            emit(NetworkResult.Failure(e.toString(), 1000))
+            emit(NetworkResult.Failure(e.toString(), Constants.CODE_UNKNOWN))
+        }
+    }
+
+    override fun updateUserName(userId: String, newUserName: String): Flow<NetworkResult<Unit>> = flow {
+        try {
+            val userRef = firestore.collection("users").document(userId)
+            userRef.update("username", newUserName).await()
+            emit(NetworkResult.Success("Username updated successfully", null))
+        } catch (e: Exception) {
+            emit(NetworkResult.Failure(e.message ?: "Failed to update username", Constants.CODE_UNKNOWN))
         }
     }
 
@@ -101,7 +112,7 @@ class NoteRepositoryImpl @Inject constructor(
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            emit(NetworkResult.Failure(e.toString(), 1000))
+            emit(NetworkResult.Failure(e.toString(), Constants.CODE_UNKNOWN))
         }
     }
 
@@ -116,7 +127,7 @@ class NoteRepositoryImpl @Inject constructor(
             }
             emit(NetworkResult.Success("Retrieved all users with notes successfully", usersWithNotes))
         } catch (e: Exception) {
-            emit(NetworkResult.Failure(e.toString(), 1000))
+            emit(NetworkResult.Failure(e.toString(), Constants.CODE_UNKNOWN))
         }
     }
 }

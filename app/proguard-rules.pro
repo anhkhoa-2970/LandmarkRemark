@@ -24,14 +24,25 @@
 -keepattributes *Annotation*
 -keepattributes Signature
 
+# Keep generic types for Gson
+-keep class com.google.gson.reflect.TypeToken {
+    <fields>;
+}
+-keep class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
+-keep class * extends com.google.gson.reflect.TypeToken {
+    *;
+}
+
 # Keep Retrofit interfaces and their methods
 -keep interface retrofit2.** {
     *;
 }
 
 # Keep Retrofit classes that are used as parameters or return types in the API interface methods
--keep class vn.aris.baseappcompose.data.models.** {*;}
--keep class vn.aris.baseappcompose.data.base.** {*;}
+-keep class com.test.landmarkremark.domain.models.** {*;}
+-keep class com.test.landmarkremark.data.base.** {*;}
 
 
 # Keep enums used by Retrofit

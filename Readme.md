@@ -10,7 +10,7 @@ Before you begin, make sure you have the following installed:
 
 ## Overview
 This Android application, Landmark Remark, allows users to save notes associated with specific locations on a map and see note in map by click to marker. 
-Users can view existing notes, add new notes, edit their notes by long clicking on their note, and search for notes by username or content.
+Users can change name, view existing notes, add new notes, edit their notes by long clicking on their note, and search for notes by username or content.
 
 
 ## Technology Stack

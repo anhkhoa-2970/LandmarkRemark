@@ -50,7 +50,7 @@ class LocationListViewModel @Inject constructor(
 				noteUseCase.getNotes().collectLatest { networkResult ->
 					networkResult.handleNetworkResult(
 						success = {
-							_notes.value = it.data ?: emptyList()
+							_notes.value =it.data?.let {listItem->  moveItemToTop(listItem, _currentUser.value!!.uid) } ?: emptyList()
 						},
 						fail = {
 							onError(it.message ?: "Unknown error!")
@@ -68,12 +68,51 @@ class LocationListViewModel @Inject constructor(
 		}
 	}
 
+	// move item note of current user to top
+	private fun moveItemToTop(userList: List<UserInfoModel>, targetUid: String): List<UserInfoModel> {
+		val mutableList = userList.toMutableList()
+		val targetIndex = mutableList.indexOfFirst { it.uid == targetUid }
+		if (targetIndex != -1 && targetIndex != 0) {
+			val targetItem = mutableList.removeAt(targetIndex)
+			mutableList.add(0, targetItem)
+		}
+
+		return mutableList.toList()
+	}
+
 	fun editMyNote(userId: String, note: NoteModel, newNote: String,onEditSuccess:()->Unit, onEditError: (String) -> Unit){
 		if (_currentUser.value != null) { // Fetches user notes only if there's a current user authenticated
 			updateProgressState(ProgressState.Loading)
 			viewModelScope.launch {
 				// Asynchronously edit note of current user and collects the latest list notes
 				noteUseCase.editMyNote(userId,note.id, NoteModel(id = DateTime.now().toString(), text =  newNote, latitude = note.latitude, longitude = note.longitude)).collectLatest { networkResult ->
+					networkResult.handleNetworkResult(
+						success = {
+							onEditSuccess()
+							loadUserNotes{errorMsg -> onEditError(errorMsg) }
+						},
+						fail = {
+							onEditError(it.message ?: "Unknown error!")
+						},
+						loading = {
+							if (it) {
+								updateProgressState(ProgressState.Loading)
+							} else {
+								updateProgressState(ProgressState.NoLoading)
+							}
+						}
+					)
+				}
+			}
+		}
+	}
+
+	fun updateUserName(userId: String, newUserName: String,onEditSuccess:()->Unit, onEditError: (String) -> Unit){
+		if (_currentUser.value != null) { // Fetches user notes only if there's a current user authenticated
+			updateProgressState(ProgressState.Loading)
+			viewModelScope.launch {
+				// Asynchronously edit note of current user and collects the latest list notes
+				noteUseCase.updateUserName(userId, newUserName).collectLatest { networkResult ->
 					networkResult.handleNetworkResult(
 						success = {
 							onEditSuccess()
