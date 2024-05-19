@@ -5,7 +5,6 @@ import android.content.Context
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -56,6 +55,7 @@ import com.test.landmarkremark.presentation.viewmodels.main.MapViewModel
 import com.test.landmarkremark.utils.Constants
 import com.test.landmarkremark.utils.LocationRequestUpdate
 import com.test.landmarkremark.utils.Utils.bitmapDescriptor
+import com.test.landmarkremark.utils.debouncedClickable
 import com.test.landmarkremark.utils.isPermissionGranted
 
 @Composable
@@ -155,7 +155,9 @@ fun MapScreen(
                     .clip(CircleShape)
                     .background(Color.White)
                     .size(36.dp)
-                    .clickable { navController.popBackStack() }, contentAlignment = Alignment.Center
+                    .debouncedClickable(debounceTime = 1000L) {
+                        navController.popBackStack()
+                    }, contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,

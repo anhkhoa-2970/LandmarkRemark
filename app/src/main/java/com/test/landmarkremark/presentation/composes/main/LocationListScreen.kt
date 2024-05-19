@@ -15,8 +15,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -43,6 +43,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -386,27 +387,28 @@ fun UserItem(
         }
     }
     Column(Modifier.padding(horizontal = 16.dp)) {
-        Row(Modifier.wrapContentWidth()) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = userInfoModel.username ?: "",
-                Modifier
-                    .weight(1f)
+                modifier = Modifier
                     .padding(start = 12.dp, top = 12.dp)
-                    .wrapContentHeight(),
+                    .wrapContentHeight()
+                    .weight(1f),
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 color = if (userInfoModel.uid == userId) colorResource(id = R.color.color_main) else Color.Black
             )
+
             if (userId == userInfoModel.uid) {
-                IconButton(onClick = { onLongClickMyName(userInfoModel) }) {
+                IconButton(modifier = Modifier.size(20.dp),onClick = { onLongClickMyName(userInfoModel) }) {
                     Icon(
                         imageVector = Icons.Filled.Edit,
-                        contentDescription = stringResource(id = R.string.user_name)
+                        contentDescription = stringResource(id = R.string.user_name),
+                        tint = Color.Black,
                     )
                 }
             }
-
         }
 
         LazyColumn(

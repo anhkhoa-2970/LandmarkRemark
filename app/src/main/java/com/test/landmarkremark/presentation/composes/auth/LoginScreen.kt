@@ -89,6 +89,8 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
         )
 
         if (!isHaveAccount) {
+            Box(modifier = Modifier.height(6.dp))
+
             CustomInputView(title = stringResource(id = R.string.user_name),
                 isRequiredLabel = true,
                 textValue = userName,

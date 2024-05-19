@@ -312,7 +312,7 @@ fun AddNoteDialog(
         title = {
             Text(
                 text = stringResource(id = R.string.add_note),
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold, color = Color.Black
             )
         },
         text = {
@@ -530,6 +530,7 @@ fun EnterTextBottomSheet(
             textAlign = TextAlign.Center,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold
+            , color = colorResource(id = R.color.black)
         )
         Spacer(modifier = modifier.height(16.dp))
         OutlinedTextField(
